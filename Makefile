@@ -1,3 +1,6 @@
+GOPATH := ${PWD}
+export GOPATH
+
 all: server
 
 server: server.go libassets.a
