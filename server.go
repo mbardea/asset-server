@@ -7,15 +7,17 @@ package main
 // char* resource() {return _binary_assets_zip_start;}
 // #cgo LDFLAGS: -L . -lassets
 import "C"
-import "unsafe"
 
 import (
     "net/http"
+    "path/filepath"
     "fmt"
     "bytes"
     "io/ioutil"
     "archive/zip"
     "log"
+    "mime"
+    "unsafe"
     "github.com/gorilla/mux"
 )
 
@@ -32,7 +34,7 @@ func extractAssets() []byte {
 }
 
 func readArchive(rawArchive []byte) cache  {
-    fcache := make(map[string] []byte)
+    fcache := make(cache)
 
     // r, err := zip.OpenReader(archive)
     r, err := makeZipReader(rawArchive)
@@ -74,6 +76,9 @@ func assetHandler(writer http.ResponseWriter, request *http.Request) {
     path :=request.URL.Path[1:]
     // log.Printf("Path: %s\n", path)
     content, found := fileCache[path]
+    ext := filepath.Ext(path)
+    mime := mime.TypeByExtension(ext)
+    writer.Header().Set("Content-Type", mime)
     if found {
         writer.Write(content)
     } else {
